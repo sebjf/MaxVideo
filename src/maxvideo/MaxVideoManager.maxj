@@ -1,0 +1,111 @@
+package maxvideo;
+
+import com.maxeler.maxcompiler.v2.build.EngineParameters;
+import com.maxeler.maxcompiler.v2.managers.custom.CustomManager;
+import com.maxeler.maxcompiler.v2.managers.custom.DFELink;
+import com.maxeler.maxcompiler.v2.managers.custom.blocks.KernelBlock;
+import com.maxeler.maxcompiler.v2.managers.custom.stdlib.DebugLevel;
+import com.maxeler.maxcompiler.v2.managers.engine_interfaces.CPUTypes;
+import com.maxeler.maxcompiler.v2.managers.engine_interfaces.EngineInterface;
+import com.maxeler.maxcompiler.v2.managers.engine_interfaces.GeneratedInterface;
+import com.maxeler.maxcompiler.v2.managers.engine_interfaces.InterfaceParam;
+
+/*
+ * Contains helper methods to build a video driver graph around a video kernel.
+ *
+ * To use this, create a new MaxCompiler project from a template, and alter it so the manager derives from this.
+ *
+ * If the kernel that computes the colour data is derived from MaxVideoKernel, pass it to setVideoKernel to set
+ * the pixel clock and ensure that all connections are made correctly.
+ * If the kernel is not of the type MaxVideoKernel, connect the kernel display data output stream to the DFELink
+ * returned by getVideoOutput(), and that it is of the format VideoWordDataType. If setVideoKernel() is not used,
+ * the pixel clock must be set manually.
+ *
+ * Any streams such is input from the CPU or Ethernet must be created in the MaxVideoManager subclass, and added
+ * to a new EngineInterface.
+ */
+public class MaxVideoManager extends CustomManager {
+
+	public MaxVideoManager(EngineParameters parameters) {
+		super(parameters);
+
+		DebugLevel myDebugLevel = new DebugLevel();
+		myDebugLevel.setHasStreamStatus(true);
+		debug.setDebugLevel(myDebugLevel);
+
+		enableLowLatencyPCIeStreams();
+	}
+
+	public KernelBlock addVideoKernel(MaxVideoKernel kernel)
+	{
+		config.setDefaultStreamClockFrequency(kernel.Display.PixelClock);
+
+		//or use generateStreamClock();
+
+		KernelBlock frameGenKernel = addKernel(kernel);
+		getVideoOutput() <== frameGenKernel.getOutput("displayDataOut");
+
+		return frameGenKernel;
+	}
+
+	public DFELink getVideoOutput()
+	{
+		if(isTargetSimulation()){
+			return addStreamToCPU("displayDataOut");
+		}else{
+			return getVideoStream("displayDataOut", 32); //this returns a stream to the display driver hardware
+		}
+	}
+
+
+	/* If we are building for simulation, then add a new stream to the interface which will feed display data back
+	 * to the cpu for examination. */
+	@Override
+	public void createSLiCinterface(GeneratedInterface engineInterface){
+		if(isTargetSimulation()){
+			((EngineInterface)engineInterface).setStream("displayDataOut", CPUTypes.UINT32, CPUTypes.UINT32.sizeInBytes());
+		}
+
+		super.createSLiCinterface(engineInterface);
+	}
+
+
+	protected static EngineInterface displayTimingsInterface(){
+		EngineInterface engine_interface = new EngineInterface("displayTimingsInterface");
+
+		/*These are the parameters exposed to the SLiC interface*/
+		InterfaceParam  H_Front_Porch 	= engine_interface.addParam("H_Front_Porch", CPUTypes.UINT16);
+		InterfaceParam  H_Sync 			= engine_interface.addParam("H_Sync", CPUTypes.UINT16);
+		InterfaceParam  H_Back_Porch 	= engine_interface.addParam("H_Back_Porch", CPUTypes.UINT16);
+		InterfaceParam  H_Active 		= engine_interface.addParam("H_Active", CPUTypes.UINT16);
+		InterfaceParam  V_Front_Porch 	= engine_interface.addParam("V_Front_Porch", CPUTypes.UINT16);
+		InterfaceParam  V_Sync 			= engine_interface.addParam("V_Sync", CPUTypes.UINT16);
+		InterfaceParam  V_Back_Porch 	= engine_interface.addParam("V_Back_Porch", CPUTypes.UINT16);
+		InterfaceParam  V_Active 		= engine_interface.addParam("V_Active", CPUTypes.UINT16);
+
+		InterfaceParam  H_Polarity 		= engine_interface.addParam("H_Polarity", CPUTypes.UINT8);
+		InterfaceParam  V_Polarity 		= engine_interface.addParam("V_Polarity", CPUTypes.UINT8);
+
+		/*setScalar makes the connection internally (i.e. to expose add to param*/
+		engine_interface.setScalar(MaxVideoKernel.Name, "H_Front_Porch", H_Front_Porch);
+		engine_interface.setScalar(MaxVideoKernel.Name, "H_Sync", H_Sync);
+		engine_interface.setScalar(MaxVideoKernel.Name, "H_Back_Porch", H_Back_Porch);
+		engine_interface.setScalar(MaxVideoKernel.Name, "H_Active", H_Active);
+		engine_interface.setScalar(MaxVideoKernel.Name, "V_Front_Porch", V_Front_Porch);
+		engine_interface.setScalar(MaxVideoKernel.Name, "V_Sync", V_Sync);
+		engine_interface.setScalar(MaxVideoKernel.Name, "V_Back_Porch", V_Back_Porch);
+		engine_interface.setScalar(MaxVideoKernel.Name, "V_Active", V_Active);
+
+		engine_interface.setScalar(MaxVideoKernel.Name, "H_Polarity", H_Polarity);
+		engine_interface.setScalar(MaxVideoKernel.Name, "V_Polarity", V_Polarity);
+
+		return engine_interface;
+	}
+
+	protected static EngineInterface interfaceDefault() {
+
+		EngineInterface engine_interface = new EngineInterface("default");
+
+		return engine_interface;
+	}
+}

@@ -1,0 +1,60 @@
+package displaystandards;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelLib;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+
+public class DisplayStandardVar {
+
+	private DisplayStandardVar(){
+
+	}
+
+	public DFEVar H_Front_Porch;
+	public DFEVar H_Sync;
+	public DFEVar H_Back_Porch;
+	public DFEVar H_Active;
+	public DFEVar V_Front_Porch;
+	public DFEVar V_Sync;
+	public DFEVar V_Back_Porch;
+	public DFEVar V_Active;
+	public DFEVar H_Polarity;
+	public DFEVar V_Polarity;
+
+	public DFEVar TotalWidth;
+	public DFEVar TotalHeight;
+
+	public DFEVar H_Active_Start;
+	public DFEVar H_Blank_Start;
+	public DFEVar V_Active_Start;
+	public DFEVar V_Blank_Start;
+
+	void finalise(){
+		TotalWidth = H_Front_Porch + H_Sync + H_Back_Porch + H_Active;
+		TotalHeight = V_Front_Porch + V_Sync + V_Back_Porch + V_Active;
+
+		H_Active_Start = H_Sync + H_Back_Porch;
+		H_Blank_Start = H_Active_Start + H_Active;
+		V_Active_Start = V_Sync + V_Back_Porch;
+		V_Blank_Start = V_Active_Start + V_Active;
+	}
+
+	public static DisplayStandardVar fromInputInterface(Kernel kernel)
+	{
+		DisplayStandardVar disp = new DisplayStandardVar();
+
+		disp.H_Front_Porch = kernel.io.scalarInput("H_Front_Porch", KernelLib.dfeUInt(16));
+		disp.H_Sync = kernel.io.scalarInput("H_Sync", KernelLib.dfeUInt(16));
+		disp.H_Back_Porch = kernel.io.scalarInput("H_Back_Porch", KernelLib.dfeUInt(16));
+		disp.H_Active = kernel.io.scalarInput("H_Active", KernelLib.dfeUInt(16));
+		disp.V_Front_Porch = kernel.io.scalarInput("V_Front_Porch", KernelLib.dfeUInt(16));
+		disp.V_Sync = kernel.io.scalarInput("V_Sync", KernelLib.dfeUInt(16));
+		disp.V_Back_Porch = kernel.io.scalarInput("V_Back_Porch", KernelLib.dfeUInt(16));
+		disp.V_Active = kernel.io.scalarInput("V_Active", KernelLib.dfeUInt(16));
+
+		disp.H_Polarity = kernel.io.scalarInput("H_Polarity", KernelLib.dfeUInt(8)) > 0;
+		disp.V_Polarity = kernel.io.scalarInput("V_Polarity", KernelLib.dfeUInt(8)) > 0;
+
+		return disp;
+	}
+}

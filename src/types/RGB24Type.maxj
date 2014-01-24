@@ -1,0 +1,33 @@
+package types;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelLib;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFETypeFactory;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStruct;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStructType;
+
+public class RGB24Type extends DFEStructType {
+	public RGB24Type()
+	{
+		super(sft("R", DFETypeFactory.dfeUInt(8)),
+			  sft("G", DFETypeFactory.dfeUInt(8)),
+			  sft("B", DFETypeFactory.dfeUInt(8)));
+	}
+	public DFEStruct FromRGB(int R, int G, int B, Kernel kernel)
+	{
+		DFEStruct colour = (new RGB24Type()).newInstance(kernel);
+		colour["R"] <== kernel.constant.var(KernelLib.dfeUInt(8), R);
+		colour["G"] <== kernel.constant.var(KernelLib.dfeUInt(8), G);;
+		colour["B"] <== kernel.constant.var(KernelLib.dfeUInt(8), B);;
+		return colour;
+	}
+	public DFEStruct FromRGB(DFEVar R, DFEVar G, DFEVar B, Kernel kernel)
+	{
+		DFEStruct colour = (new RGB24Type()).newInstance(kernel);
+		colour["R"] <== R.cast(KernelLib.dfeUInt(8));
+		colour["G"] <== G.cast(KernelLib.dfeUInt(8));
+		colour["B"] <== B.cast(KernelLib.dfeUInt(8));
+		return colour;
+	}
+}

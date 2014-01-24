@@ -1,0 +1,6 @@
+*.o
+*.d
+*.max
+*.checksum
+*.class
+/binaries/*

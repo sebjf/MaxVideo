@@ -1,0 +1,126 @@
+package maxvideo;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFETypeFactory;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStruct;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStructType;
+import com.maxeler.maxeleros.managercompiler.libs.VideoWordDataType;
+
+import displaystandards.DisplayStandard;
+
+/* MaxImageGenKernel
+ *
+ * This is the base class for image generator designs. The MaxImageGenKernel is responsible for initialising and managing
+ * the Ethernet interface, and generating the control & timing signals in accordance with the timing specifications sent
+ * by the CPU.
+ *
+ *  Override ComputePixelColour() in a subclass to implement a rendering algorithm.
+ */
+
+public abstract class MaxVideoKernel extends Kernel {
+
+	public static String Name = "MaxImageGenKernel";
+
+	protected MaxVideoKernel(KernelParameters parameters, DisplayStandard display) {
+		super(parameters);
+
+		this.Display = display;
+
+		flush.disabled();
+		io.output("displayDataOut", GenerateDisplayWordData().pack(), dfeRawBits(32), constant.var(true));
+	}
+
+	public DisplayStandard Display;
+
+	public class FragmentInput
+	{
+		public DFEVar frame;
+		public DFEVar x;
+		public DFEVar y;
+		public DFEVar valid;
+	}
+
+	private DFEStruct GenerateDisplayWordData()
+	{
+		FragmentInput input = new FragmentInput();
+
+		CounterChain pixelCounterChain = control.count.makeCounterChain();
+		input.frame = pixelCounterChain.addCounter(Integer.MAX_VALUE, 1);
+		input.y = pixelCounterChain.addCounter(Display.TotalHeight, 1);
+		input.x = pixelCounterChain.addCounter(Display.TotalWidth, 1);
+
+		DFEStruct videoWordData = (new VideoWordDataType()).newInstance(this);
+
+		/*Compute the control bits first to ensure the colour calculation code cannot return a corrupted
+		 *set of counters. Ideally, the members would be read only to prevent this happening.*/
+
+		DFEStruct controlData = ComputePixelControlBytes(input);
+		videoWordData["DE"] <== controlData["DE"];
+		videoWordData["HSync"] <== controlData["HSync"];
+		videoWordData["VSync"] <== controlData["VSync"];
+		videoWordData["StartOfFrame"] <== controlData["StartOfFrame"];
+		videoWordData["EndOfFrame"] <== controlData["EndOfFrame"];
+
+		DFEStruct colourData = ComputePixelColourBytes(input);
+		videoWordData["R"] <== colourData["R"];
+		videoWordData["G"] <== colourData["G"];
+		videoWordData["B"] <== colourData["B"];
+
+		videoWordData["Padding"] <== constant.var(dfeUInt(3),0).cast(dfeRawBits(3));
+
+		return videoWordData;
+	}
+
+	protected class DisplayControlWordType extends DFEStructType {
+		public DisplayControlWordType()
+		{
+			super(sft("DE", DFETypeFactory.dfeBool()),
+				  sft("HSync", DFETypeFactory.dfeBool()),
+				  sft("VSync", DFETypeFactory.dfeBool()),
+				  sft("StartOfFrame", DFETypeFactory.dfeBool()),
+				  sft("EndOfFrame", DFETypeFactory.dfeBool()));
+		}
+	}
+
+	private DFEStruct ComputePixelControlBytes(FragmentInput input)
+	{
+		DFEStruct control = (new DisplayControlWordType()).newInstance(this);
+
+		control["HSync"] 	<== (input.x < Display.H_Sync).ternaryIf(constant.var(Display.H_Polarity), constant.var(!Display.H_Polarity));
+		control["VSync"] 	<== (input.y < Display.V_Sync).ternaryIf(constant.var(Display.V_Polarity), constant.var(!Display.V_Polarity));
+		control["DE"] 		<== (input.x >= Display.H_Active_Start).and(input.x < Display.H_Blank_Start).and(input.y >= Display.V_Active_Start).and(input.y < Display.V_Blank_Start);
+
+		control["StartOfFrame"] <== input.x.eq(0).and(input.y.eq(0));
+		control["EndOfFrame"] <== input.x.eq(Display.TotalWidth - 1).and(input.y.eq(Display.TotalHeight - 1));
+
+		return control;
+	}
+
+	private DFEStruct ComputePixelColourBytes(FragmentInput input)
+	{
+		/* The timing specifications state that HSync & VSync should be aligned, so we need to begin our blanking periods at (0,0)
+		 * and offset the active area until later in time. It is unlikely the rendering algorithm will handle negative coordinates
+		 * however so this method masks these off and makes it appear to the renderer that the area is always active */
+
+		/* Both *_Active_Start & X,Y are defined as UInts so this subtraction will result in very high values of X,Y, to be clamped
+		 * in the following statements. */
+
+		input.x = input.x - Display.H_Active_Start;
+		input.y = input.y - Display.V_Active_Start;
+
+	//	input.valid = (input.x > Display.H_Blank_Start).and(input.y > Display.V_Blank_Start);
+
+	//	input.x = input.valid ? input.x : 0;
+	//	input.y = input.valid ? input.y : 0;
+
+		return ComputePixelColour(input);
+	}
+
+	/* Override this with the image generation algorithm */
+
+	public abstract DFEStruct ComputePixelColour(FragmentInput input);
+
+}

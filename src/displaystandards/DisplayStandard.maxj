@@ -1,0 +1,62 @@
+package displaystandards;
+
+public class DisplayStandard {
+
+	private DisplayStandard(){
+
+	}
+
+	public int PixelClock;
+
+	public int H_Front_Porch;
+	public int H_Sync;
+	public int H_Back_Porch;
+	public int H_Active;
+	public int V_Front_Porch;
+	public int V_Sync;
+	public int V_Back_Porch;
+	public int V_Active;
+	public boolean H_Polarity;
+	public boolean V_Polarity;
+
+	public int TotalWidth;
+	public int TotalHeight;
+
+	public int H_Active_Start;
+	public int H_Blank_Start;
+	public int V_Active_Start;
+	public int V_Blank_Start;
+
+	private void finalise(){
+		TotalWidth = H_Front_Porch + H_Sync + H_Back_Porch + H_Active;
+		TotalHeight = V_Front_Porch + V_Sync + V_Back_Porch + V_Active;
+
+		H_Active_Start = H_Sync + H_Back_Porch;
+		H_Blank_Start = H_Active_Start + H_Active;
+		V_Active_Start = V_Sync + V_Back_Porch;
+		V_Blank_Start = V_Active_Start + V_Active;
+	}
+
+	public static DisplayStandard make_1280x1024x75(){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 135;
+
+		display.H_Front_Porch = 16;
+		display.H_Sync = 144;
+		display.H_Back_Porch = 248;
+		display.H_Active = 1280;
+		display.V_Front_Porch = 1;
+		display.V_Sync = 3;
+		display.V_Back_Porch = 38;
+		display.V_Active = 1024;
+
+		display.H_Polarity = true;
+		display.V_Polarity = true;
+
+		display.finalise();
+
+		return display;
+	}
+}
