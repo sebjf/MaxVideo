@@ -30,7 +30,7 @@ public abstract class MaxVideoKernel extends Kernel {
 		this.Display = display;
 
 		flush.disabled();
-		io.output("displayDataOut", GenerateDisplayWordData().pack(), dfeRawBits(32), constant.var(true));
+		io.output("displayDataOut", GenerateDisplayWordData().pack(), dfeRawBits((new VideoWordDataType()).getTotalBits()), constant.var(true));
 	}
 
 	public DisplayStandard Display;
@@ -69,7 +69,12 @@ public abstract class MaxVideoKernel extends Kernel {
 		videoWordData["G"] <== colourData["G"];
 		videoWordData["B"] <== colourData["B"];
 
-		videoWordData["Padding"] <== constant.var(dfeUInt(3),0).cast(dfeRawBits(3));
+		videoWordData["R2"] <== constant.var(dfeUInt(8),0);
+		videoWordData["G2"] <== constant.var(dfeUInt(8),0);
+		videoWordData["B2"] <== constant.var(dfeUInt(8),0);
+
+		videoWordData["Padding1"] <== constant.var(dfeRawBits(3),0);
+		videoWordData["Padding2"] <== constant.var(dfeRawBits(8),0);
 
 		return videoWordData;
 	}

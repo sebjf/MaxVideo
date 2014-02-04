@@ -3,12 +3,14 @@ package maxvideo;
 import com.maxeler.maxcompiler.v2.build.EngineParameters;
 import com.maxeler.maxcompiler.v2.managers.custom.CustomManager;
 import com.maxeler.maxcompiler.v2.managers.custom.DFELink;
+import com.maxeler.maxcompiler.v2.managers.custom.ManagerClock;
 import com.maxeler.maxcompiler.v2.managers.custom.blocks.KernelBlock;
 import com.maxeler.maxcompiler.v2.managers.custom.stdlib.DebugLevel;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.CPUTypes;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.EngineInterface;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.GeneratedInterface;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.InterfaceParam;
+import com.maxeler.maxeleros.managercompiler.libs.VideoConfiguration;
 
 /*
  * Contains helper methods to build a video driver graph around a video kernel.
@@ -33,27 +35,31 @@ public class MaxVideoManager extends CustomManager {
 		myDebugLevel.setHasStreamStatus(true);
 		debug.setDebugLevel(myDebugLevel);
 
+		getBuildManager().setParameter("matchStreamClocksExactly", "true");
+
 		enableLowLatencyPCIeStreams();
 	}
 
 	public KernelBlock addVideoKernel(MaxVideoKernel kernel)
 	{
-		config.setDefaultStreamClockFrequency(kernel.Display.PixelClock);
+		config.setDefaultStreamClockFrequency((int)kernel.Display.getDisplayClock());
 
-		//or use generateStreamClock();
+		ManagerClock pixelClock = generateStreamClock("pixelClock", (int)kernel.Display.getDisplayClock());
 
 		KernelBlock frameGenKernel = addKernel(kernel);
-		getVideoOutput() <== frameGenKernel.getOutput("displayDataOut");
+		frameGenKernel.setClock(pixelClock);
+
+		getVideoOutput(pixelClock, VideoConfiguration.DVISingleLink) <== frameGenKernel.getOutput("displayDataOut");
 
 		return frameGenKernel;
 	}
 
-	public DFELink getVideoOutput()
+	public DFELink getVideoOutput(ManagerClock clock, VideoConfiguration configuration)
 	{
 		if(isTargetSimulation()){
 			return addStreamToCPU("displayDataOut");
 		}else{
-			return getVideoStream("displayDataOut", 32); //this returns a stream to the display driver hardware
+			return getVideoStream("displayDataOut", clock, configuration); //this returns a stream to the display driver hardware
 		}
 	}
 
@@ -63,7 +69,7 @@ public class MaxVideoManager extends CustomManager {
 	@Override
 	public void createSLiCinterface(GeneratedInterface engineInterface){
 		if(isTargetSimulation()){
-			((EngineInterface)engineInterface).setStream("displayDataOut", CPUTypes.UINT32, CPUTypes.UINT32.sizeInBytes());
+			((EngineInterface)engineInterface).setStream("displayDataOut", CPUTypes.UINT64, CPUTypes.UINT64.sizeInBytes());
 		}
 
 		super.createSLiCinterface(engineInterface);

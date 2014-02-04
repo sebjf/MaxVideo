@@ -1,5 +1,7 @@
 package displaystandards;
 
+import com.maxeler.maxeleros.managercompiler.libs.VideoConfiguration;
+
 public class DisplayStandard {
 
 	private DisplayStandard(){
@@ -26,6 +28,30 @@ public class DisplayStandard {
 	public int H_Blank_Start;
 	public int V_Active_Start;
 	public int V_Blank_Start;
+
+	public float getDisplayClock()
+	{
+		if(isDualLink()){
+			return PixelClock / 2.0f;
+		}
+		return PixelClock;
+	}
+
+	public VideoConfiguration getVideoConfiguration()
+	{
+		if(isDualLink()){
+			return VideoConfiguration.DVIDualLink;
+		}
+		return VideoConfiguration.DVISingleLink;
+	}
+
+	public boolean isDualLink()
+	{
+		if(PixelClock > 165){
+			return true;
+		}
+		return false;
+	}
 
 	private void finalise(){
 		TotalWidth = H_Front_Porch + H_Sync + H_Back_Porch + H_Active;
