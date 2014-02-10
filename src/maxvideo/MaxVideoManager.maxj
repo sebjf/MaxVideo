@@ -49,7 +49,7 @@ public class MaxVideoManager extends CustomManager {
 		KernelBlock frameGenKernel = addKernel(kernel);
 		frameGenKernel.setClock(pixelClock);
 
-		getVideoOutput(pixelClock, VideoConfiguration.DVISingleLink) <== frameGenKernel.getOutput("displayDataOut");
+		getVideoOutput(pixelClock, VideoConfiguration.DVIDualLink) <== frameGenKernel.getOutput("displayDataOut");
 
 		return frameGenKernel;
 	}
