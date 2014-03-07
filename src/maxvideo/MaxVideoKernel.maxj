@@ -31,6 +31,7 @@ public abstract class MaxVideoKernel extends Kernel {
 
 		flush.disabled();
 		io.output("displayDataOut", GenerateDisplayWordData().pack(), dfeRawBits((new VideoWordDataType()).getTotalBits()), constant.var(true));
+
 	}
 
 	public DisplayStandard Display;
@@ -69,12 +70,13 @@ public abstract class MaxVideoKernel extends Kernel {
 		videoWordData["G"] <== colourData["G"];
 		videoWordData["B"] <== colourData["B"];
 
+		videoWordData["Padding1"] <== constant.var(dfeRawBits(3),0);
+
 		videoWordData["R2"] <== constant.var(dfeUInt(8),0);
 		videoWordData["G2"] <== constant.var(dfeUInt(8),0);
 		videoWordData["B2"] <== constant.var(dfeUInt(8),0);
 
-		videoWordData["Padding1"] <== constant.var(dfeRawBits(3),0);
-		videoWordData["Padding2"] <== constant.var(dfeRawBits(8),0);
+		videoWordData["Metadata"] <== ComputePixelMetadata(input);
 
 		return videoWordData;
 	}
@@ -122,6 +124,11 @@ public abstract class MaxVideoKernel extends Kernel {
 	//	input.y = input.valid ? input.y : 0;
 
 		return ComputePixelColour(input);
+	}
+
+	public DFEVar ComputePixelMetadata(FragmentInput input)
+	{
+		return constant.var(dfeRawBits(8), 0);
 	}
 
 	/* Override this with the image generation algorithm */

@@ -10,7 +10,6 @@ import com.maxeler.maxcompiler.v2.managers.engine_interfaces.CPUTypes;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.EngineInterface;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.GeneratedInterface;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.InterfaceParam;
-import com.maxeler.maxeleros.managercompiler.libs.VideoConfiguration;
 
 /*
  * Contains helper methods to build a video driver graph around a video kernel.
@@ -49,17 +48,20 @@ public class MaxVideoManager extends CustomManager {
 		KernelBlock frameGenKernel = addKernel(kernel);
 		frameGenKernel.setClock(pixelClock);
 
-		getVideoOutput(pixelClock, VideoConfiguration.DVIDualLink) <== frameGenKernel.getOutput("displayDataOut");
+		getVideoOutput(pixelClock) <== frameGenKernel.getOutput("displayDataOut");
+
+		addMaxFileConstant("DisplayTotalWidth", kernel.Display.TotalWidth);
+		addMaxFileConstant("DisplayTotalHeight", kernel.Display.TotalHeight);
 
 		return frameGenKernel;
 	}
 
-	public DFELink getVideoOutput(ManagerClock clock, VideoConfiguration configuration)
+	public DFELink getVideoOutput(ManagerClock clock)
 	{
 		if(isTargetSimulation()){
 			return addStreamToCPU("displayDataOut");
 		}else{
-			return getVideoStream("displayDataOut", clock, configuration); //this returns a stream to the display driver hardware
+			return getVideoStream("displayDataOut", clock); //this returns a stream to the display driver hardware
 		}
 	}
 

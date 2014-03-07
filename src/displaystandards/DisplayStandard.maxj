@@ -8,7 +8,7 @@ public class DisplayStandard {
 
 	}
 
-	public int PixelClock;
+	private float PixelClock;
 
 	public int H_Front_Porch;
 	public int H_Sync;
@@ -84,5 +84,95 @@ public class DisplayStandard {
 		display.finalise();
 
 		return display;
+	}
+
+	public static DisplayStandard make_1920x1080x60(){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 182.5f;
+
+		display.H_Front_Porch = 32;
+		display.H_Sync = 696;
+		display.H_Back_Porch = 32;
+		display.H_Active = 1920;
+		display.V_Front_Porch = 22;
+		display.V_Sync = 11;
+		display.V_Back_Porch = 22;
+		display.V_Active = 1080;
+
+		display.H_Polarity = false;
+		display.V_Polarity = false;
+
+		display.finalise();
+
+		return display;
+	}
+
+	public static DisplayStandard make_1920x1080x149(){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 328.52f;
+
+		display.H_Front_Porch = 24;
+		display.H_Sync = 32;
+		display.H_Back_Porch = 32;
+		display.H_Active = 1920;
+		display.V_Front_Porch = 3;
+		display.V_Sync = 5;
+		display.V_Back_Porch = 10;
+		display.V_Active = 1080;
+
+		display.H_Polarity = true;
+		display.V_Polarity = true;
+
+		display.finalise();
+
+		return display;
+	}
+
+	public static DisplayStandard make_1280x720x150(){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 149.54f;
+
+		display.H_Front_Porch = 24;
+		display.H_Sync = 32;
+		display.H_Back_Porch = 24;
+		display.H_Active = 1280;
+		display.V_Front_Porch = 3;
+		display.V_Sync = 5;
+		display.V_Back_Porch = 5;
+		display.V_Active = 720;
+
+		display.H_Polarity = true;
+		display.V_Polarity = true;
+
+		display.finalise();
+
+		return display;
+	}
+
+	public double[] getParametersList()
+	{
+		double[] timings = new double[9];
+		timings[0] = PixelClock;
+		timings[1] = H_Front_Porch;
+		timings[2] = H_Sync;
+		timings[3] = H_Back_Porch;
+		timings[4] = H_Active;
+		timings[5] = V_Front_Porch;
+		timings[6] = V_Sync;
+		timings[7] = V_Back_Porch;
+		timings[8] = V_Active;
+		timings[9] = H_Polarity ? 1 : 0;
+		timings[10] = V_Polarity ? 1 : 0;
+
+		timings[11] = TotalWidth;
+		timings[12] = TotalHeight;
+
+		return timings;
 	}
 }
