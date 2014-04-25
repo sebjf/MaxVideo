@@ -1,6 +1,8 @@
 package functions;
 
 import types.RGB24Type;
+import types.RGBA32Type;
+import types.fRGBA;
 
 import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
 import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
@@ -14,6 +16,33 @@ public class ColourFunctions extends Kernel{
 	protected ColourFunctions(KernelParameters parameters) {
 		super(parameters);
 		// TODO Auto-generated constructor stub
+	}
+
+	public static DFEStruct TofRGBA(DFEStruct RGBA32)
+	{
+		Kernel k = RGBA32.getKernel();
+
+		DFEFloat tfloat = dfeFloat(8, 24);
+
+		DFEVar r = RGBA32["R"]; r = r.cast(tfloat); r = r / 255.0f;
+		DFEVar g = RGBA32["G"]; g = g.cast(tfloat); g = g / 255.0f;
+		DFEVar b = RGBA32["B"]; b = b.cast(tfloat); b = b / 255.0f;
+		DFEVar a = RGBA32["B"]; a = a.cast(tfloat); a = a / 255.0f;
+
+		return new RGBA32Type().FromRGB(r,g,b,a,k);
+	}
+
+	/* Blends foreground (f) into background (b) based on Alpha of foreground. Returned value has alpha the same as
+	 * background. */
+	public static fRGBA Blend(fRGBA f, fRGBA b)
+	{
+		DFEVar pb = 1.0f - f.A;
+
+		DFEVar br = (b.R * pb) + (f.R * f.A);
+		DFEVar bg = (b.G * pb) + (f.G * f.A);
+		DFEVar bb = (b.B * pb) + (f.B * f.A);
+
+		return new fRGBA(br, bg, bb, b.A);
 	}
 
 	public static DFEStruct Blend(DFEStruct foreground, DFEStruct background)
@@ -41,8 +70,7 @@ public class ColourFunctions extends Kernel{
 		DFEVar g = (bg * pb) + (fg * pf); g = g.cast(tint);
 		DFEVar b = (bb * pb) + (fb * pf); b = b.cast(tint);
 
-
-		DFEStruct colour = new RGB24Type().FromRGB(r,g,b,k);
+		DFEStruct colour = RGB24Type.FromRGB(r,g,b,k);
 
 		return colour;
 	}

@@ -1,0 +1,51 @@
+package types;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFETypeFactory;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStruct;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStructType;
+
+public class uRGB {
+
+	private final DFEType type = Kernel.dfeUInt(8);
+
+	public uRGB(int r, int g, int b, Kernel k)
+	{
+		R = k.constant.var(type, r);
+		G = k.constant.var(type, g);
+		B = k.constant.var(type, b);
+	}
+
+	public uRGB(DFEVar r, DFEVar g, DFEVar b)
+	{
+		R = r.cast(type);
+		G = g.cast(type);
+		B = b.cast(type);
+	}
+
+	/* Casting from a translucent colour will premultiply the alpha */
+	public uRGB(fRGBA fColour)
+	{
+		R = (fColour.R * fColour.A * 255.0f).cast(type);
+		G = (fColour.G * fColour.A * 255.0f).cast(type);
+		B = (fColour.B * fColour.A * 255.0f).cast(type);
+	}
+
+	public final DFEVar R;
+	public final DFEVar G;
+	public final DFEVar B;
+
+	public DFEStruct getDFEStruct()
+	{
+		DFEStruct s = (new DFEStructType(
+			  DFEStructType.sft("R", DFETypeFactory.dfeUInt(8)),
+			  DFEStructType.sft("G", DFETypeFactory.dfeUInt(8)),
+			  DFEStructType.sft("B", DFETypeFactory.dfeUInt(8)))).newInstance(R.getKernel());
+		s["R"] = R;
+		s["G"] = G;
+		s["B"] = B;
+		return s;
+	}
+}

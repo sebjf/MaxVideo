@@ -1,5 +1,7 @@
 package maxvideo;
 
+import types.uRGB;
+
 import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
 import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
@@ -65,10 +67,10 @@ public abstract class MaxVideoKernel extends Kernel {
 		videoWordData["StartOfFrame"] <== controlData["StartOfFrame"];
 		videoWordData["EndOfFrame"] <== controlData["EndOfFrame"];
 
-		DFEStruct colourData = ComputePixelColourBytes(input);
-		videoWordData["R"] <== colourData["R"];
-		videoWordData["G"] <== colourData["G"];
-		videoWordData["B"] <== colourData["B"];
+		uRGB colourData = ComputePixelColourBytes(input);
+		videoWordData["R"] <== colourData.R;
+		videoWordData["G"] <== colourData.G;
+		videoWordData["B"] <== colourData.B;
 
 		videoWordData["Padding1"] <== constant.var(dfeRawBits(3),0);
 
@@ -106,7 +108,7 @@ public abstract class MaxVideoKernel extends Kernel {
 		return control;
 	}
 
-	private DFEStruct ComputePixelColourBytes(FragmentInput input)
+	private uRGB ComputePixelColourBytes(FragmentInput input)
 	{
 		/* The timing specifications state that HSync & VSync should be aligned, so we need to begin our blanking periods at (0,0)
 		 * and offset the active area until later in time. It is unlikely the rendering algorithm will handle negative coordinates
@@ -133,6 +135,6 @@ public abstract class MaxVideoKernel extends Kernel {
 
 	/* Override this with the image generation algorithm */
 
-	public abstract DFEStruct ComputePixelColour(FragmentInput input);
+	public abstract uRGB ComputePixelColour(FragmentInput input);
 
 }
