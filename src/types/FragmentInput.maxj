@@ -1,0 +1,28 @@
+package types;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+
+public class FragmentInput
+{
+	public final DFEVar m_frame_number;
+	public final DFEVar m_x;
+	public final DFEVar m_y;
+	public final DFEVar m_dataenable;
+	public final DFEVar m_start_of_frame;
+	public final DFEVar m_end_of_frame;
+
+	public FragmentInput(DFEVar frame,
+						 DFEVar x,
+						 DFEVar y,
+						 DFEVar de,
+						 DFEVar sof,
+						 DFEVar eof){
+		m_frame_number = frame;
+		m_x = x;
+		m_y = y;
+		m_dataenable = de;
+		m_start_of_frame = sof;
+		m_end_of_frame = eof;
+	}
+
+}

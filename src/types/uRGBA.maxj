@@ -2,47 +2,56 @@ package types;
 
 import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
-import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFETypeFactory;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStruct;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStructType;
 
 public class uRGBA {
 
-	private final DFEType type = Kernel.dfeUInt(8);
+	private static final DFEType type = Kernel.dfeUInt(8);
+
+	public final DFEVar m_R;
+	public final DFEVar m_G;
+	public final DFEVar m_B;
+	public final DFEVar m_A;
 
 	public uRGBA(int r, int g, int b, int a, Kernel k)
 	{
-		R = k.constant.var(type, r);
-		G = k.constant.var(type, g);
-		B = k.constant.var(type, b);
-		A = k.constant.var(type, a);
+		m_R = k.constant.var(type, r);
+		m_G = k.constant.var(type, g);
+		m_B = k.constant.var(type, b);
+		m_A = k.constant.var(type, a);
 	}
 
 	public uRGBA(DFEVar r, DFEVar g, DFEVar b, DFEVar a)
 	{
-		R = r.cast(type);
-		G = g.cast(type);
-		B = b.cast(type);
-		A = a.cast(type);
+		m_R = r.cast(type);
+		m_G = g.cast(type);
+		m_B = b.cast(type);
+		m_A = a.cast(type);
 	}
 
-	public final DFEVar R;
-	public final DFEVar G;
-	public final DFEVar B;
-	public final DFEVar A;
+	public static DFEStructType getDFEStructType()
+	{
+		return new DFEStructType(
+				  DFEStructType.sft("R", type),
+				  DFEStructType.sft("G", type),
+				  DFEStructType.sft("B", type),
+				  DFEStructType.sft("A", type));
+	}
 
 	public DFEStruct getDFEStruct()
 	{
-		DFEStruct s = (new DFEStructType(
-			  DFEStructType.sft("R", DFETypeFactory.dfeUInt(8)),
-			  DFEStructType.sft("G", DFETypeFactory.dfeUInt(8)),
-			  DFEStructType.sft("B", DFETypeFactory.dfeUInt(8)),
-			  DFEStructType.sft("A", DFETypeFactory.dfeUInt(8)))).newInstance(R.getKernel());
-		s["R"] = R;
-		s["G"] = G;
-		s["B"] = B;
-		s["A"] = A;
+		DFEStruct s = (getDFEStructType()).newInstance(m_R.getKernel());
+		s["R"] = m_R;
+		s["G"] = m_G;
+		s["B"] = m_B;
+		s["A"] = m_A;
 		return s;
+	}
+
+	public static uRGBA Transparent(Kernel kernel)
+	{
+		return new uRGBA(0,0,0,0,kernel);
 	}
 }

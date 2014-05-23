@@ -2,71 +2,91 @@ package types;
 
 import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
-import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFETypeFactory;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStruct;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStructType;
 
 public class fRGBA {
 
-	private final DFEType type = Kernel.dfeFloat(8, 24);
+	private static final DFEType type = Kernel.dfeFloat(8, 24);
+
+	public final DFEVar m_R;
+	public final DFEVar m_G;
+	public final DFEVar m_B;
+	public final DFEVar m_A;
 
 	public fRGBA(double r, double g, double b, double a, Kernel k)
 	{
-		R = k.constant.var(type, r);
-		G = k.constant.var(type, g);
-		B = k.constant.var(type, b);
-		A = k.constant.var(type, a);
+		m_R = k.constant.var(type, r);
+		m_G = k.constant.var(type, g);
+		m_B = k.constant.var(type, b);
+		m_A = k.constant.var(type, a);
 	}
 
 	public fRGBA(DFEVar r, DFEVar g, DFEVar b, DFEVar a)
 	{
-		R = r.cast(type);
-		G = g.cast(type);
-		B = b.cast(type);
-		A = a.cast(type);
+		m_R = r.cast(type);
+		m_G = g.cast(type);
+		m_B = b.cast(type);
+		m_A = a.cast(type);
+	}
+
+	private DFEVar getNormalised(DFEVar v)
+	{
+		if(v.getType().isUInt() || v.getType().isInt()){
+			return (v.cast(type) / 255.0f);
+		}else{
+			return (v.cast(type));
+		}
 	}
 
 	public fRGBA(DFEStruct struct)
 	{
-		DFEVar r = struct["R"]; R = r.cast(type);
-		DFEVar g = struct["G"]; G = g.cast(type);
-		DFEVar b = struct["B"]; B = b.cast(type);
-		DFEVar a = struct["A"]; A = a.cast(type);
+		DFEVar r = struct["R"];
+		DFEVar g = struct["G"];
+		DFEVar b = struct["B"];
+		DFEVar a = struct["A"];
+
+		m_R = getNormalised(r);
+		m_G = getNormalised(g);
+		m_B = getNormalised(b);
+		m_A = getNormalised(a);
 	}
 
 	public fRGBA(uRGBA uColour)
 	{
-		R = uColour.R.cast(type) / 255.0f;
-		G = uColour.G.cast(type) / 255.0f;
-		B = uColour.B.cast(type) / 255.0f;
-		A = uColour.A.cast(type) / 255.0f;
+		m_R = uColour.m_R.cast(type) / 255.0f;
+		m_G = uColour.m_G.cast(type) / 255.0f;
+		m_B = uColour.m_B.cast(type) / 255.0f;
+		m_A = uColour.m_A.cast(type) / 255.0f;
 	}
 
 	public fRGBA(uRGB uColour)
 	{
-		R = uColour.R.cast(type) / 255.0f;
-		G = uColour.G.cast(type) / 255.0f;
-		B = uColour.B.cast(type) / 255.0f;
-		A = R.getKernel().constant.var(type, 1.0f);
+		m_R = uColour.m_R.cast(type) / 255.0f;
+		m_G = uColour.m_G.cast(type) / 255.0f;
+		m_B = uColour.m_B.cast(type) / 255.0f;
+		m_A = m_R.getKernel().constant.var(type, 1.0f);
 	}
 
-	public final DFEVar R;
-	public final DFEVar G;
-	public final DFEVar B;
-	public final DFEVar A;
+	public static DFEStructType getDFEStructType()
+	{
+		return new DFEStructType(
+				  DFEStructType.sft("R", type),
+				  DFEStructType.sft("G", type),
+				  DFEStructType.sft("B", type),
+				  DFEStructType.sft("A", type));
+	}
 
+	/* This DFEStruct is a structure of floating-point values. Convert to uRGB[A] before calling getDFEStruct() to
+	 * get a structure suitable for passing to the DVI channel or CPU. */
 	public DFEStruct getDFEStruct()
 	{
-		DFEStruct s = (new DFEStructType(
-			  DFEStructType.sft("R", DFETypeFactory.dfeUInt(8)),
-			  DFEStructType.sft("G", DFETypeFactory.dfeUInt(8)),
-			  DFEStructType.sft("B", DFETypeFactory.dfeUInt(8)),
-			  DFEStructType.sft("A", DFETypeFactory.dfeUInt(8)))).newInstance(R.getKernel());
-		s["R"] = R;
-		s["G"] = G;
-		s["B"] = B;
-		s["A"] = A;
+		DFEStruct s = (getDFEStructType()).newInstance(m_R.getKernel());
+		s["R"] = m_R;
+		s["G"] = m_G;
+		s["B"] = m_B;
+		s["A"] = m_A;
 		return s;
 	}
 

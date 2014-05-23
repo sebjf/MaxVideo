@@ -2,50 +2,86 @@ package types;
 
 import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEType;
-import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFETypeFactory;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStruct;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStructType;
 
 public class uRGB {
 
-	private final DFEType type = Kernel.dfeUInt(8);
+	private static final DFEType type = Kernel.dfeUInt(8);
+
+	public final DFEVar m_R;
+	public final DFEVar m_G;
+	public final DFEVar m_B;
 
 	public uRGB(int r, int g, int b, Kernel k)
 	{
-		R = k.constant.var(type, r);
-		G = k.constant.var(type, g);
-		B = k.constant.var(type, b);
+		m_R = k.constant.var(type, r);
+		m_G = k.constant.var(type, g);
+		m_B = k.constant.var(type, b);
 	}
 
 	public uRGB(DFEVar r, DFEVar g, DFEVar b)
 	{
-		R = r.cast(type);
-		G = g.cast(type);
-		B = b.cast(type);
+		m_R = r.cast(type);
+		m_G = g.cast(type);
+		m_B = b.cast(type);
 	}
 
 	/* Casting from a translucent colour will premultiply the alpha */
 	public uRGB(fRGBA fColour)
 	{
-		R = (fColour.R * fColour.A * 255.0f).cast(type);
-		G = (fColour.G * fColour.A * 255.0f).cast(type);
-		B = (fColour.B * fColour.A * 255.0f).cast(type);
+		m_R = (fColour.m_R * fColour.m_A * 255.0f).cast(type);
+		m_G = (fColour.m_G * fColour.m_A * 255.0f).cast(type);
+		m_B = (fColour.m_B * fColour.m_A * 255.0f).cast(type);
 	}
 
-	public final DFEVar R;
-	public final DFEVar G;
-	public final DFEVar B;
+	private DFEVar getNormalised(DFEVar v)
+	{
+		if(v.getType().isUInt() || v.getType().isInt()){
+			return (v.cast(type));
+		}else{
+			return (v.cast(type) * 255.0f);
+		}
+	}
+
+	/* These constructors are convert between representations only - if you want to premultiply alpha, convert to
+	 * fRGBA first, then to uRGB. */
+	public uRGB(DFEStruct struct)
+	{
+		DFEVar r = struct["R"];
+		DFEVar g = struct["G"];
+		DFEVar b = struct["B"];
+
+		m_R = getNormalised(r);
+		m_G = getNormalised(g);
+		m_B = getNormalised(b);
+	}
+
+	public static DFEStructType getDFEStructType()
+	{
+		return new DFEStructType(
+				  DFEStructType.sft("R", type),
+				  DFEStructType.sft("G", type),
+				  DFEStructType.sft("B", type));
+	}
 
 	public DFEStruct getDFEStruct()
 	{
-		DFEStruct s = (new DFEStructType(
-			  DFEStructType.sft("R", DFETypeFactory.dfeUInt(8)),
-			  DFEStructType.sft("G", DFETypeFactory.dfeUInt(8)),
-			  DFEStructType.sft("B", DFETypeFactory.dfeUInt(8)))).newInstance(R.getKernel());
-		s["R"] = R;
-		s["G"] = G;
-		s["B"] = B;
+		DFEStruct s = (getDFEStructType()).newInstance(m_R.getKernel());
+		s["R"] = m_R;
+		s["G"] = m_G;
+		s["B"] = m_B;
 		return s;
+	}
+
+	public static uRGB Black(Kernel kernel)
+	{
+		return new uRGB(0,0,0,kernel);
+	}
+
+	public DFEVar Equals(uRGB a)
+	{
+		return (m_R.eq(a.m_R)) & (m_G.eq(a.m_G)) & (m_B.eq(a.m_B));
 	}
 }

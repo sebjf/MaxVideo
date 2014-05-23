@@ -1,77 +1,42 @@
 package functions;
 
-import types.RGB24Type;
-import types.RGBA32Type;
 import types.fRGBA;
 
 import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
 import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
-import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEFix;
-import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEFloat;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
-import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStruct;
 
 public class ColourFunctions extends Kernel{
-	/*Blend will blend foreground into background based on foreground's alpha propery*/
 	protected ColourFunctions(KernelParameters parameters) {
 		super(parameters);
 		// TODO Auto-generated constructor stub
 	}
 
-	public static DFEStruct TofRGBA(DFEStruct RGBA32)
-	{
-		Kernel k = RGBA32.getKernel();
-
-		DFEFloat tfloat = dfeFloat(8, 24);
-
-		DFEVar r = RGBA32["R"]; r = r.cast(tfloat); r = r / 255.0f;
-		DFEVar g = RGBA32["G"]; g = g.cast(tfloat); g = g / 255.0f;
-		DFEVar b = RGBA32["B"]; b = b.cast(tfloat); b = b / 255.0f;
-		DFEVar a = RGBA32["B"]; a = a.cast(tfloat); a = a / 255.0f;
-
-		return new RGBA32Type().FromRGB(r,g,b,a,k);
-	}
-
 	/* Blends foreground (f) into background (b) based on Alpha of foreground. Returned value has alpha the same as
-	 * background. */
+	 * background.
+	 * For example:
+	 * 	r_final = background.r * (1 - foreground.a) + (foreground.r * foreground.a);
+	 * 	a_final = background.a;
+	 * */
 	public static fRGBA Blend(fRGBA f, fRGBA b)
 	{
-		DFEVar pb = 1.0f - f.A;
+		DFEVar pb = 1.0f - f.m_A;
 
-		DFEVar br = (b.R * pb) + (f.R * f.A);
-		DFEVar bg = (b.G * pb) + (f.G * f.A);
-		DFEVar bb = (b.B * pb) + (f.B * f.A);
+		DFEVar br = (b.m_R * pb) + (f.m_R * f.m_A);
+		DFEVar bg = (b.m_G * pb) + (f.m_G * f.m_A);
+		DFEVar bb = (b.m_B * pb) + (f.m_B * f.m_A);
 
-		return new fRGBA(br, bg, bb, b.A);
+		return new fRGBA(br, bg, bb, b.m_A);
 	}
 
-	public static DFEStruct Blend(DFEStruct foreground, DFEStruct background)
+	/* Performs an element-wise multiplication. Does not clip or normalise the results. */
+	public static fRGBA Multiply(fRGBA a, fRGBA b)
 	{
-		Kernel k = background.getKernel();
+		DFEVar mr = a.m_R * b.m_R;
+		DFEVar mg = a.m_G * b.m_G;
+		DFEVar mb = a.m_B * b.m_B;
+		DFEVar ma = a.m_A * b.m_A;
 
-		DFEFloat tfloat = dfeFloat(8, 24);
-		DFEFix tint = dfeUInt(8);
-
-		DFEVar a = foreground["A"];
-		DFEVar af = a.cast(tfloat);
-
-		DFEVar pf = af / 255.0f;
-		DFEVar pb = 1.0f - pf;
-
-		DFEVar br = background["R"]; br = br.cast(tfloat);
-		DFEVar bg = background["G"]; bg = bg.cast(tfloat);
-		DFEVar bb = background["B"]; bb = bb.cast(tfloat);
-
-		DFEVar fr = foreground["R"]; fr = fr.cast(tfloat);
-		DFEVar fg = foreground["G"]; fg = fg.cast(tfloat);
-		DFEVar fb = foreground["B"]; fb = fb.cast(tfloat);
-
-		DFEVar r = (br * pb) + (fr * pf); r = r.cast(tint);
-		DFEVar g = (bg * pb) + (fg * pf); g = g.cast(tint);
-		DFEVar b = (bb * pb) + (fb * pf); b = b.cast(tint);
-
-		DFEStruct colour = RGB24Type.FromRGB(r,g,b,k);
-
-		return colour;
+		return new fRGBA(mr,mg,mb,ma);
 	}
 }
