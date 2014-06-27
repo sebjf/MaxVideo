@@ -63,6 +63,29 @@ public class DisplayStandard {
 		V_Blank_Start = V_Active_Start + V_Active;
 	}
 
+	public static DisplayStandard make_1024x768x60(){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 65;
+
+		display.H_Front_Porch = 24;
+		display.H_Sync = 136;
+		display.H_Back_Porch = 160;
+		display.H_Active = 1024;
+		display.V_Front_Porch = 3;
+		display.V_Sync = 6;
+		display.V_Back_Porch = 29;
+		display.V_Active = 768;
+
+		display.H_Polarity = false;
+		display.V_Polarity = false;
+
+		display.finalise();
+
+		return display;
+	}
+
 	public static DisplayStandard make_1280x1024x75(){
 
 		DisplayStandard display = new DisplayStandard();

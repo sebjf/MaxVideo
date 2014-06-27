@@ -47,6 +47,7 @@ public class MaxVideoManager extends CustomManager {
 
 		KernelBlock frameGenKernel = addKernel(kernel);
 		frameGenKernel.setClock(pixelClock);
+		kernel.clock = pixelClock;
 
 		getVideoOutput(pixelClock) <== frameGenKernel.getOutput("displayDataOut");
 
@@ -54,6 +55,11 @@ public class MaxVideoManager extends CustomManager {
 		addMaxFileConstant("DisplayTotalHeight", kernel.Display.TotalHeight);
 		addMaxFileConstant("DisplayStartX", kernel.Display.H_Active_Start);
 		addMaxFileConstant("DisplayStartY", kernel.Display.V_Active_Start);
+
+		addMaxFileConstant("DisplayWidth", kernel.Display.H_Active);
+		addMaxFileConstant("DisplayHeight", kernel.Display.V_Active);
+
+		addMaxFileConstant("PixelClock", (int)kernel.Display.getDisplayClock());
 
 		return frameGenKernel;
 	}

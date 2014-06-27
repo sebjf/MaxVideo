@@ -8,6 +8,7 @@ import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
 import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStruct;
+import com.maxeler.maxcompiler.v2.managers.custom.ManagerClock;
 import com.maxeler.maxeleros.managercompiler.libs.VideoWordDataType;
 
 import displaystandards.DisplayStandard;
@@ -25,6 +26,8 @@ public abstract class MaxVideoKernel extends Kernel {
 		io.output("displayDataOut", GenerateDisplayWordData().pack(), dfeRawBits((new VideoWordDataType()).getTotalBits()), constant.var(true));
 
 	}
+
+	public ManagerClock clock;
 
 	public DisplayStandard Display;
 
@@ -44,7 +47,9 @@ public abstract class MaxVideoKernel extends Kernel {
 
 	private DFEStruct GenerateDisplayWordData()
 	{
-		CounterChain pixelCounterChain = control.count.makeCounterChain();
+		DFEVar enable = io.scalarInput("Enable", dfeBool());
+
+		CounterChain pixelCounterChain = control.count.makeCounterChain(enable);
 		DFEVar frame = pixelCounterChain.addCounter(Integer.MAX_VALUE, 1);
 		DFEVar y = pixelCounterChain.addCounter(Display.TotalHeight, 1);
 		DFEVar x = pixelCounterChain.addCounter(Display.TotalWidth, 1);
@@ -110,8 +115,8 @@ public abstract class MaxVideoKernel extends Kernel {
 		 * and offset the active area until later in time. It is unlikely the rendering algorithm will handle negative coordinates
 		 * however so this method masks these off and makes it appear to the renderer that the area is always active */
 
-		DFEVar x = location.m_x - Display.H_Active_Start;
-		DFEVar y = location.m_y - Display.V_Active_Start;
+		DFEVar x = location.m_x.cast(dfeInt(32)) - Display.H_Active_Start;
+		DFEVar y = location.m_y.cast(dfeInt(32)) - Display.V_Active_Start;
 
 		FragmentInput input = new FragmentInput(location.m_frame, x, y, timing.m_DE, timing.m_StartOfFrame, timing.m_EndOfFrame);
 
