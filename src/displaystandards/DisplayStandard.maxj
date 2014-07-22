@@ -86,11 +86,58 @@ public class DisplayStandard {
 		return display;
 	}
 
+	public static DisplayStandard make_1024x768x150(){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 162.48f;
+
+		display.H_Front_Porch = 24;
+		display.H_Sync = 136;
+		display.H_Back_Porch = 160;
+		display.H_Active = 1024;
+		display.V_Front_Porch = 3;
+		display.V_Sync = 6;
+		display.V_Back_Porch = 29;
+		display.V_Active = 768;
+
+		display.H_Polarity = false;
+		display.V_Polarity = false;
+
+		display.finalise();
+
+		return display;
+	}
+
+	public static DisplayStandard make_1280x1024x60(){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 108;
+
+		display.H_Active = 1280;
+		display.H_Front_Porch = 48;
+		display.H_Sync = 112;
+		display.H_Back_Porch = 248;
+
+		display.V_Active = 1024;
+		display.V_Front_Porch = 1;
+		display.V_Sync = 3;
+		display.V_Back_Porch = 38;
+
+		display.H_Polarity = true;
+		display.V_Polarity = true;
+
+		display.finalise();
+
+		return display;
+	}
+
 	public static DisplayStandard make_1280x1024x75(){
 
 		DisplayStandard display = new DisplayStandard();
 
-		display.PixelClock = 135;
+		display.PixelClock = 137.37f;
 
 		display.H_Front_Porch = 16;
 		display.H_Sync = 144;
@@ -155,23 +202,25 @@ public class DisplayStandard {
 		return display;
 	}
 
+	//http://www.monitortests.com/forum/Thread-Overclock-Asus-VG248QE-720p-200hz
 	public static DisplayStandard make_1280x720x150(){
 
 		DisplayStandard display = new DisplayStandard();
 
-		display.PixelClock = 149.54f;
+		display.PixelClock = 143.5f;//149.54f;
 
+		display.H_Active = 1280;
 		display.H_Front_Porch = 24;
 		display.H_Sync = 32;
 		display.H_Back_Porch = 24;
-		display.H_Active = 1280;
+
+		display.V_Active = 720;
 		display.V_Front_Porch = 3;
 		display.V_Sync = 5;
 		display.V_Back_Porch = 5;
-		display.V_Active = 720;
 
 		display.H_Polarity = true;
-		display.V_Polarity = true;
+		display.V_Polarity = false;
 
 		display.finalise();
 

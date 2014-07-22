@@ -41,9 +41,9 @@ public class MaxVideoManager extends CustomManager {
 
 	public KernelBlock addVideoKernel(MaxVideoKernel kernel)
 	{
-		config.setDefaultStreamClockFrequency((int)kernel.Display.getDisplayClock());
+		config.setDefaultStreamClockFrequency(kernel.Display.getDisplayClock());
 
-		ManagerClock pixelClock = generateStreamClock("pixelClock", (int)kernel.Display.getDisplayClock());
+		ManagerClock pixelClock = generateStreamClock("pixelClock", kernel.Display.getDisplayClock());
 
 		KernelBlock frameGenKernel = addKernel(kernel);
 		frameGenKernel.setClock(pixelClock);

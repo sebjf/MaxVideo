@@ -99,8 +99,11 @@ public abstract class MaxVideoKernel extends Kernel {
 	{
 		DisplayControlWord control = new DisplayControlWord();
 
-		control.m_HSync	= (input.m_x < Display.H_Sync).ternaryIf(constant.var(Display.H_Polarity), constant.var(!Display.H_Polarity));
-		control.m_VSync	= (input.m_y < Display.V_Sync).ternaryIf(constant.var(Display.V_Polarity), constant.var(!Display.V_Polarity));
+		DFEVar h_sync_polarity = io.scalarInput("HSyncPolarity", dfeBool());
+		DFEVar v_sync_polarity = io.scalarInput("VSyncPolarity", dfeBool());
+
+		control.m_HSync	= (input.m_x < Display.H_Sync).ternaryIf(h_sync_polarity, ~h_sync_polarity);
+		control.m_VSync	= (input.m_y < Display.V_Sync).ternaryIf(v_sync_polarity, ~v_sync_polarity);
 		control.m_DE	= (input.m_x >= Display.H_Active_Start).and(input.m_x < Display.H_Blank_Start).and(input.m_y >= Display.V_Active_Start).and(input.m_y < Display.V_Blank_Start);
 
 		control.m_StartOfFrame = input.m_x.eq(0).and(input.m_y.eq(0));
