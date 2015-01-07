@@ -36,7 +36,6 @@ public class MaxVideoManager extends CustomManager {
 
 		getBuildManager().setParameter("matchStreamClocksExactly", "true");
 
-		enableLowLatencyPCIeStreams();
 	}
 
 	public KernelBlock addVideoKernel(MaxVideoKernel kernel)
