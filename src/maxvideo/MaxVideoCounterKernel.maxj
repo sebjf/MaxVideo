@@ -1,0 +1,33 @@
+package maxvideo;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.CounterChain;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+
+import displaystandards.DisplayStandard;
+
+public class MaxVideoCounterKernel  extends Kernel {
+
+	public MaxVideoCounterKernel(KernelParameters parameters, DisplayStandard displayStandard) {
+		super(parameters);
+
+		flush.disabled();
+
+		CounterChain pixelCounterChain = control.count.makeCounterChain(constant.var(true));
+		DFEVar y = pixelCounterChain.addCounter(displayStandard.TotalHeight, 1);
+		DFEVar x = pixelCounterChain.addCounter(displayStandard.TotalWidth, 1);
+
+		DFEVar sanitised_x = x.cast(dfeInt(16)) - displayStandard.H_Active_Start;
+		DFEVar sanitised_y = y.cast(dfeInt(16)) - displayStandard.V_Active_Start;
+
+		io.output("x", dfeUInt(16)) <== (sanitised_x < 0) ? constant.var(0) : sanitised_x.cast(dfeUInt(16));
+		io.output("y", dfeUInt(16)) <== (sanitised_y < 0) ? constant.var(0) : sanitised_y.cast(dfeUInt(16));
+
+		/* The purpose of these is to avoid needing a fanout in the manager and nothing else */
+		io.output("signalKernel_x", dfeUInt(16)) <== x.cast(dfeUInt(16));
+		io.output("signalKernel_y", dfeUInt(16)) <== y.cast(dfeUInt(16));
+	}
+
+
+}

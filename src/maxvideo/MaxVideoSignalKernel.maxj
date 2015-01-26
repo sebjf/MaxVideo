@@ -1,0 +1,113 @@
+package maxvideo;
+
+import types.uRGB;
+
+import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
+import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Counter;
+import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.WrapMode;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStruct;
+import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStructType;
+
+import displaystandards.DisplayStandard;
+
+/* This kernel is designed to collate the video data, and synchronise it with the control signals and the pixel clock.
+ * When building for hardware, connect the displayDataOut output of this kernel to the video transmitter:
+ *
+ *  getVideoStream("displayDataOut", clock) <== maxVideoDataKernelBlock.getOutput("displayDataOut"); //this returns a stream to the display driver hardware
+ *
+ *  This kernel must be clocked at the same rate as the pixel clock, defined by the display standard. Create and set this like so:
+ *
+ *  ManagerClock pixelClock = generateStreamClock("pixelClock", kernel.Display.getDisplayClock());
+ *  maxVideoDataKernelBlock.setClock(pixelClock);
+ *
+ *  */
+
+public class MaxVideoSignalKernel extends Kernel {
+
+	final public static String m_name = "MaxImageGenKernel";
+
+	public static final DFEStructType SimulationVideoWordDataType =
+		new DFEStructType(
+				DFEStructType.sft("R", dfeUInt(8)),
+				DFEStructType.sft("G", dfeUInt(8)),
+				DFEStructType.sft("B", dfeUInt(8)),
+				DFEStructType.sft("DE", dfeBool()),
+				DFEStructType.sft("HSync", dfeBool()),
+				DFEStructType.sft("VSync", dfeBool()),
+				DFEStructType.sft("StartOfFrame", dfeBool()),
+				DFEStructType.sft("EndOfFrame", dfeBool()),
+				DFEStructType.sft("phaseCompensationFifoWrEn", dfeBool()),
+				DFEStructType.sft("phaseCompensationFifoRdEn",dfeBool()),
+				DFEStructType.sft("Padding1", dfeRawBits(1)),
+				DFEStructType.sft("R2", dfeUInt(8)),
+				DFEStructType.sft("G2", dfeUInt(8)),
+				DFEStructType.sft("B2", dfeUInt(8)),
+				DFEStructType.sft("Metadata", dfeRawBits(8)));
+
+	public MaxVideoSignalKernel(KernelParameters parameters, DisplayStandard displayStandard) {
+		super(parameters);
+
+		flush.disabled();
+
+		//DFEVar enable = io.scalarInput("Enable", dfeBool());
+
+		/* Get the display counters */
+
+		DFEVar x = io.input("x", dfeUInt(16));
+		DFEVar y = io.input("y", dfeUInt(16));
+
+		/* Get the colour inputs */
+
+		DFEVar rgb1 = io.input("rgb", dfeUInt(24));
+
+		/* Create the output struct to map to the transmitter input */
+
+		DFEStruct videoWord = SimulationVideoWordDataType.newInstance(this);
+
+		/* Generate the control signals */
+
+		DFEVar h_sync_polarity = io.scalarInput("HSyncPolarity", dfeBool());
+		DFEVar v_sync_polarity = io.scalarInput("VSyncPolarity", dfeBool());
+
+		videoWord["HSync"] 	<== (x < displayStandard.H_Sync).ternaryIf(h_sync_polarity, ~h_sync_polarity);
+		videoWord["VSync"] 	<== (y < displayStandard.V_Sync).ternaryIf(v_sync_polarity, ~v_sync_polarity);
+		videoWord["DE"]		<== (x >= displayStandard.H_Active_Start).and(x < displayStandard.H_Blank_Start).and(y >= displayStandard.V_Active_Start).and(y < displayStandard.V_Blank_Start);
+
+		videoWord["StartOfFrame"] <== x.eq(0).and(y.eq(0));
+		videoWord["EndOfFrame"]   <== x.eq(displayStandard.TotalWidth - 1).and(y.eq(displayStandard.TotalHeight - 1));
+
+		/* Extract and format the colour data */
+
+		uRGB colourData = new uRGB(rgb1);
+		videoWord["R"] <== colourData.m_R.cast(dfeUInt(8));
+		videoWord["G"] <== colourData.m_G.cast(dfeUInt(8));
+		videoWord["B"] <== colourData.m_B.cast(dfeUInt(8));
+
+
+		/* Generate the phase compensation fifo control signals */
+
+		Counter phaseCompensationFifoCounter = control.count.makeCounter(control.count.makeParams(3).withWrapMode(WrapMode.STOP_AT_MAX));
+
+		videoWord["phaseCompensationFifoWrEn"] <== phaseCompensationFifoCounter.getCount() > 0;
+		videoWord["phaseCompensationFifoRdEn"] <== phaseCompensationFifoCounter.getCount() > 2;
+
+		/* Tie down the remaining unused inputs */
+
+		videoWord["Padding1"] <== constant.var(dfeRawBits(1),0);
+
+		videoWord["R2"] <== constant.var(dfeUInt(8),0);
+		videoWord["G2"] <== constant.var(dfeUInt(8),0);
+		videoWord["B2"] <== constant.var(dfeUInt(8),0);
+
+		videoWord["Metadata"] <== constant.var(dfeRawBits(8),0);
+
+		/* Transmit the formatted word to the video transmitter */
+
+		io.output("displayDataOut", dfeRawBits(64)) <== videoWord.pack();
+
+	}
+
+
+}

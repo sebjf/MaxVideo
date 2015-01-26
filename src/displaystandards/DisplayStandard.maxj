@@ -1,8 +1,13 @@
 package displaystandards;
 
-import com.maxeler.maxeleros.managercompiler.libs.VideoConfiguration;
 
 public class DisplayStandard {
+
+	public enum VideoProtocol
+	{
+		DVISingleLink,
+		DVIDualLink
+	}
 
 	private DisplayStandard(){
 
@@ -37,12 +42,12 @@ public class DisplayStandard {
 		return PixelClock;
 	}
 
-	public VideoConfiguration getVideoConfiguration()
+	public VideoProtocol getVideoConfiguration()
 	{
 		if(isDualLink()){
-			return VideoConfiguration.DVIDualLink;
+			return VideoProtocol.DVIDualLink;
 		}
-		return VideoConfiguration.DVISingleLink;
+		return VideoProtocol.DVISingleLink;
 	}
 
 	public boolean isDualLink()
@@ -61,6 +66,29 @@ public class DisplayStandard {
 		H_Blank_Start = H_Active_Start + H_Active;
 		V_Active_Start = V_Sync + V_Back_Porch;
 		V_Blank_Start = V_Active_Start + V_Active;
+	}
+
+	public static DisplayStandard make_debug_100x100()
+	{
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 65;
+
+		display.H_Front_Porch = 1;
+		display.H_Sync = 2;
+		display.H_Back_Porch = 1;
+		display.H_Active = 252;
+		display.V_Front_Porch = 1;
+		display.V_Sync = 2;
+		display.V_Back_Porch = 1;
+		display.V_Active = 252;
+
+		display.H_Polarity = false;
+		display.V_Polarity = false;
+
+		display.finalise();
+
+		return display;
 	}
 
 	public static DisplayStandard make_1024x768x60(){

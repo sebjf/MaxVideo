@@ -2,9 +2,6 @@ package maxvideo;
 
 import com.maxeler.maxcompiler.v2.build.EngineParameters;
 import com.maxeler.maxcompiler.v2.managers.custom.CustomManager;
-import com.maxeler.maxcompiler.v2.managers.custom.DFELink;
-import com.maxeler.maxcompiler.v2.managers.custom.ManagerClock;
-import com.maxeler.maxcompiler.v2.managers.custom.blocks.KernelBlock;
 import com.maxeler.maxcompiler.v2.managers.custom.stdlib.DebugLevel;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.CPUTypes;
 import com.maxeler.maxcompiler.v2.managers.engine_interfaces.EngineInterface;
@@ -38,40 +35,6 @@ public class MaxVideoManager extends CustomManager {
 
 	}
 
-	public KernelBlock addVideoKernel(MaxVideoKernel kernel)
-	{
-		config.setDefaultStreamClockFrequency(kernel.Display.getDisplayClock());
-
-		ManagerClock pixelClock = generateStreamClock("pixelClock", kernel.Display.getDisplayClock());
-
-		KernelBlock frameGenKernel = addKernel(kernel);
-		frameGenKernel.setClock(pixelClock);
-		kernel.clock = pixelClock;
-
-		getVideoOutput(pixelClock) <== frameGenKernel.getOutput("displayDataOut");
-
-		addMaxFileConstant("DisplayTotalWidth", kernel.Display.TotalWidth);
-		addMaxFileConstant("DisplayTotalHeight", kernel.Display.TotalHeight);
-		addMaxFileConstant("DisplayStartX", kernel.Display.H_Active_Start);
-		addMaxFileConstant("DisplayStartY", kernel.Display.V_Active_Start);
-
-		addMaxFileConstant("DisplayWidth", kernel.Display.H_Active);
-		addMaxFileConstant("DisplayHeight", kernel.Display.V_Active);
-
-		addMaxFileConstant("PixelClock", (int)kernel.Display.getDisplayClock());
-
-		return frameGenKernel;
-	}
-
-	public DFELink getVideoOutput(ManagerClock clock)
-	{
-		if(isTargetSimulation()){
-			return addStreamToCPU("displayDataOut");
-		}else{
-			return getVideoStream("displayDataOut", clock); //this returns a stream to the display driver hardware
-		}
-	}
-
 
 	/* If we are building for simulation, then add a new stream to the interface which will feed display data back
 	 * to the cpu for examination. */
@@ -102,17 +65,17 @@ public class MaxVideoManager extends CustomManager {
 		InterfaceParam  V_Polarity 		= engine_interface.addParam("V_Polarity", CPUTypes.UINT8);
 
 		/*setScalar makes the connection internally (i.e. to expose add to param*/
-		engine_interface.setScalar(MaxVideoKernel.m_name, "H_Front_Porch", H_Front_Porch);
-		engine_interface.setScalar(MaxVideoKernel.m_name, "H_Sync", H_Sync);
-		engine_interface.setScalar(MaxVideoKernel.m_name, "H_Back_Porch", H_Back_Porch);
-		engine_interface.setScalar(MaxVideoKernel.m_name, "H_Active", H_Active);
-		engine_interface.setScalar(MaxVideoKernel.m_name, "V_Front_Porch", V_Front_Porch);
-		engine_interface.setScalar(MaxVideoKernel.m_name, "V_Sync", V_Sync);
-		engine_interface.setScalar(MaxVideoKernel.m_name, "V_Back_Porch", V_Back_Porch);
-		engine_interface.setScalar(MaxVideoKernel.m_name, "V_Active", V_Active);
+		engine_interface.setScalar(MaxVideoSignalKernel.m_name, "H_Front_Porch", H_Front_Porch);
+		engine_interface.setScalar(MaxVideoSignalKernel.m_name, "H_Sync", H_Sync);
+		engine_interface.setScalar(MaxVideoSignalKernel.m_name, "H_Back_Porch", H_Back_Porch);
+		engine_interface.setScalar(MaxVideoSignalKernel.m_name, "H_Active", H_Active);
+		engine_interface.setScalar(MaxVideoSignalKernel.m_name, "V_Front_Porch", V_Front_Porch);
+		engine_interface.setScalar(MaxVideoSignalKernel.m_name, "V_Sync", V_Sync);
+		engine_interface.setScalar(MaxVideoSignalKernel.m_name, "V_Back_Porch", V_Back_Porch);
+		engine_interface.setScalar(MaxVideoSignalKernel.m_name, "V_Active", V_Active);
 
-		engine_interface.setScalar(MaxVideoKernel.m_name, "H_Polarity", H_Polarity);
-		engine_interface.setScalar(MaxVideoKernel.m_name, "V_Polarity", V_Polarity);
+		engine_interface.setScalar(MaxVideoSignalKernel.m_name, "H_Polarity", H_Polarity);
+		engine_interface.setScalar(MaxVideoSignalKernel.m_name, "V_Polarity", V_Polarity);
 
 		return engine_interface;
 	}
