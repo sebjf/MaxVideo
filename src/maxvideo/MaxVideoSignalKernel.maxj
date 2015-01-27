@@ -28,7 +28,7 @@ public class MaxVideoSignalKernel extends Kernel {
 
 	final public static String m_name = "MaxImageGenKernel";
 
-	public static final DFEStructType SimulationVideoWordDataType =
+	public static final DFEStructType VideoWordDataType =
 		new DFEStructType(
 				DFEStructType.sft("R", dfeUInt(8)),
 				DFEStructType.sft("G", dfeUInt(8)),
@@ -64,7 +64,7 @@ public class MaxVideoSignalKernel extends Kernel {
 
 		/* Create the output struct to map to the transmitter input */
 
-		DFEStruct videoWord = SimulationVideoWordDataType.newInstance(this);
+		DFEStruct videoWord = VideoWordDataType.newInstance(this);
 
 		/* Generate the control signals */
 
