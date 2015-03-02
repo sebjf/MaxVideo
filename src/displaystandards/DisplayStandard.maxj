@@ -80,7 +80,7 @@ public class DisplayStandard {
 		V_Blank_Start = V_Active_Start + V_Active;
 	}
 
-	public static DisplayStandard make_debug_100x100()
+	public static DisplayStandard make_debug_256x256()
 	{
 		DisplayStandard display = new DisplayStandard();
 
