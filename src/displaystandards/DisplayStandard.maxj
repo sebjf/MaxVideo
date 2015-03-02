@@ -13,6 +13,7 @@ public class DisplayStandard {
 
 	private DisplayStandard(){
 		sanitiseCounters = true;
+		enableHalfPatternInput = false;
 	}
 
 	private float PixelClock;
@@ -37,6 +38,7 @@ public class DisplayStandard {
 	public int V_Blank_Start;
 
 	public boolean sanitiseCounters;
+	public boolean enableHalfPatternInput;
 
 	public void AddMaxFileConstants(DFEManager manager)
 	{

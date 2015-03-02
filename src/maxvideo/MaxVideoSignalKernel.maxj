@@ -40,7 +40,7 @@ public class MaxVideoSignalKernel extends Kernel {
 				DFEStructType.sft("EndOfFrame", dfeBool()),
 				DFEStructType.sft("phaseCompensationFifoWrEn", dfeBool()),
 				DFEStructType.sft("phaseCompensationFifoRdEn",dfeBool()),
-				DFEStructType.sft("Padding1", dfeRawBits(1)),
+				DFEStructType.sft("HalfClockEnable", dfeBool()),
 				DFEStructType.sft("R2", dfeUInt(8)),
 				DFEStructType.sft("G2", dfeUInt(8)),
 				DFEStructType.sft("B2", dfeUInt(8)),
@@ -93,9 +93,15 @@ public class MaxVideoSignalKernel extends Kernel {
 		videoWord["phaseCompensationFifoWrEn"] <== phaseCompensationFifoCounter.getCount() > 0;
 		videoWord["phaseCompensationFifoRdEn"] <== phaseCompensationFifoCounter.getCount() > 2;
 
-		/* Tie down the remaining unused inputs */
+		/* Debug and test pattern signalling */
 
-		videoWord["Padding1"] <== constant.var(dfeRawBits(1),0);
+		if(displayStandard.enableHalfPatternInput){
+			videoWord["HalfClockEnable"] <== io.input("HalfClockEnable", dfeBool());
+		}else{
+			videoWord["HalfClockEnable"] <== constant.var(dfeBool(),0);
+		}
+
+		/* Tie down the remaining unused inputs */
 
 		videoWord["R2"] <== constant.var(dfeUInt(8),0);
 		videoWord["G2"] <== constant.var(dfeUInt(8),0);

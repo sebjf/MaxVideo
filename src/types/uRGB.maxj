@@ -87,6 +87,11 @@ public class uRGB {
 		return new uRGB(0,0,0,kernel);
 	}
 
+	public static uRGB White(Kernel kernel)
+	{
+		return new uRGB(255,255,255,kernel);
+	}
+
 	public DFEVar Equals(uRGB a)
 	{
 		return (m_R.eq(a.m_R)) & (m_G.eq(a.m_G)) & (m_B.eq(a.m_B));
