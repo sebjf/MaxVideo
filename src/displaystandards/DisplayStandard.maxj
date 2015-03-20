@@ -44,6 +44,8 @@ public class DisplayStandard {
 	{
 		manager.addMaxFileConstant("DisplayTotalWidth", TotalWidth);
 		manager.addMaxFileConstant("DisplayTotalHeight", TotalHeight);
+		manager.addMaxFileConstant("DisplayActiveWidth", H_Active);
+		manager.addMaxFileConstant("DisplayActiveHeight", V_Active);
 	}
 
 	public float getDisplayClock()
