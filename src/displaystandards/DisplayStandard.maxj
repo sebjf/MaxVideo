@@ -126,29 +126,6 @@ public class DisplayStandard {
 		return display;
 	}
 
-	public static DisplayStandard make_1024x768x150(){
-
-		DisplayStandard display = new DisplayStandard();
-
-		display.PixelClock = 162.48f;
-
-		display.H_Front_Porch = 24;
-		display.H_Sync = 136;
-		display.H_Back_Porch = 160;
-		display.H_Active = 1024;
-		display.V_Front_Porch = 3;
-		display.V_Sync = 6;
-		display.V_Back_Porch = 29;
-		display.V_Active = 768;
-
-		display.H_Polarity = false;
-		display.V_Polarity = false;
-
-		display.finalise();
-
-		return display;
-	}
-
 	public static DisplayStandard make_1280x1024x60(){
 
 		DisplayStandard display = new DisplayStandard();
@@ -219,23 +196,23 @@ public class DisplayStandard {
 		return display;
 	}
 
-	public static DisplayStandard make_1920x1080x149(){
+	public static DisplayStandard make_1024x768x150(){
 
 		DisplayStandard display = new DisplayStandard();
 
-		display.PixelClock = 328.52f;
+		display.PixelClock = 162.48f;
 
 		display.H_Front_Porch = 24;
-		display.H_Sync = 32;
-		display.H_Back_Porch = 32;
-		display.H_Active = 1920;
+		display.H_Sync = 136;
+		display.H_Back_Porch = 160;
+		display.H_Active = 1024;
 		display.V_Front_Porch = 3;
-		display.V_Sync = 5;
-		display.V_Back_Porch = 10;
-		display.V_Active = 1080;
+		display.V_Sync = 6;
+		display.V_Back_Porch = 29;
+		display.V_Active = 768;
 
-		display.H_Polarity = true;
-		display.V_Polarity = true;
+		display.H_Polarity = false;
+		display.V_Polarity = false;
 
 		display.finalise();
 
@@ -261,6 +238,29 @@ public class DisplayStandard {
 
 		display.H_Polarity = true;
 		display.V_Polarity = false;
+
+		display.finalise();
+
+		return display;
+	}
+
+	public static DisplayStandard make_1920x1080x149(){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 328.52f;
+
+		display.H_Front_Porch = 24;
+		display.H_Sync = 32;
+		display.H_Back_Porch = 32;
+		display.H_Active = 1920;
+		display.V_Front_Porch = 3;
+		display.V_Sync = 5;
+		display.V_Back_Porch = 10;
+		display.V_Active = 1080;
+
+		display.H_Polarity = true;
+		display.V_Polarity = true;
 
 		display.finalise();
 
