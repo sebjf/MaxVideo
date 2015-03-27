@@ -9,7 +9,19 @@ import displaystandards.DisplayStandard;
 
 public class MaxVideoCounterKernel  extends Kernel {
 
-	public MaxVideoCounterKernel(KernelParameters parameters, DisplayStandard displayStandard) {
+	public static class CounterOutput
+	{
+		public CounterOutput(String postfix, boolean sanitised)
+		{
+			m_sanitised = sanitised;
+			m_postfix = postfix;
+		}
+
+		String m_postfix;
+		boolean m_sanitised;
+	}
+
+	public MaxVideoCounterKernel(KernelParameters parameters, DisplayStandard displayStandard, CounterOutput... outputs) {
 		super(parameters);
 
 		flush.disabled();
@@ -21,20 +33,21 @@ public class MaxVideoCounterKernel  extends Kernel {
 		DFEVar sanitised_x = x.cast(dfeInt(16)) - displayStandard.H_Active_Start;
 		DFEVar sanitised_y = y.cast(dfeInt(16)) - displayStandard.V_Active_Start;
 
-		if(displayStandard.sanitiseCounters)
+		for (CounterOutput output : outputs)
 		{
-			io.output("x", dfeInt(16)) <== (sanitised_x < 0) ? constant.var(0) : sanitised_x.cast(dfeInt(16));
-			io.output("y", dfeInt(16)) <== (sanitised_y < 0) ? constant.var(0) : sanitised_y.cast(dfeInt(16));
-		}
-		else
-		{
-			io.output("x", dfeInt(16)) <== sanitised_x.cast(dfeInt(16));
-			io.output("y", dfeInt(16)) <== sanitised_y.cast(dfeInt(16));
+			if(output.m_sanitised)
+			{
+				io.output("x" + output.m_postfix, dfeInt(16)) <== (sanitised_x < 0) ? constant.var(0) : sanitised_x;
+				io.output("y" + output.m_postfix, dfeInt(16)) <== (sanitised_y < 0) ? constant.var(0) : sanitised_y;
+			}
+			else
+			{
+				io.output("x" + output.m_postfix, dfeInt(16)) <== x.cast(dfeInt(16));
+				io.output("y" + output.m_postfix, dfeInt(16)) <== y.cast(dfeInt(16));
+			}
+
 		}
 
-		/* The purpose of these is to avoid needing a fanout in the manager and nothing else */
-		io.output("signalKernel_x", dfeUInt(16)) <== x.cast(dfeUInt(16));
-		io.output("signalKernel_y", dfeUInt(16)) <== y.cast(dfeUInt(16));
 	}
 
 
