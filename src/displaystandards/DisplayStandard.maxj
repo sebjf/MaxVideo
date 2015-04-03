@@ -82,6 +82,29 @@ public class DisplayStandard {
 		V_Blank_Start = V_Active_Start + V_Active;
 	}
 
+	public static DisplayStandard make_debug(int width, int height)
+	{
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 65;
+
+		display.H_Front_Porch = 1;
+		display.H_Sync = 2;
+		display.H_Back_Porch = 1;
+		display.H_Active = width;
+		display.V_Front_Porch = 1;
+		display.V_Sync = 2;
+		display.V_Back_Porch = 1;
+		display.V_Active = height;
+
+		display.H_Polarity = false;
+		display.V_Polarity = false;
+
+		display.finalise();
+
+		return display;
+	}
+
 	public static DisplayStandard make_debug_256x256()
 	{
 		DisplayStandard display = new DisplayStandard();
