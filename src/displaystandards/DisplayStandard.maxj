@@ -82,6 +82,29 @@ public class DisplayStandard {
 		V_Blank_Start = V_Active_Start + V_Active;
 	}
 
+	public static DisplayStandard make_debug(int width, int height)
+	{
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 65;
+
+		display.H_Front_Porch = 1;
+		display.H_Sync = 2;
+		display.H_Back_Porch = 1;
+		display.H_Active = width;
+		display.V_Front_Porch = 1;
+		display.V_Sync = 2;
+		display.V_Back_Porch = 1;
+		display.V_Active = height;
+
+		display.H_Polarity = false;
+		display.V_Polarity = false;
+
+		display.finalise();
+
+		return display;
+	}
+
 	public static DisplayStandard make_debug_256x256()
 	{
 		DisplayStandard display = new DisplayStandard();
@@ -166,6 +189,29 @@ public class DisplayStandard {
 		display.V_Sync = 6;
 		display.V_Back_Porch = 6; 	//Blanking Period - (Front Porch + Sync Width)
 		display.V_Active = 1920;
+
+		display.H_Polarity = true;
+		display.V_Polarity = true;
+
+		display.finalise();
+
+		return display;
+	}
+
+	public static DisplayStandard make_RiftDK2_Half(){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 98.3076f;
+
+		display.H_Front_Porch = 56; //Horizontal Offset
+		display.H_Sync = 72;
+		display.H_Back_Porch = 128; 	//Blanking Period - (Front Porch + Sync Width)
+		display.H_Active = 720;
+		display.V_Front_Porch = 3; 	//Vertical Offset
+		display.V_Sync = 10;
+		display.V_Back_Porch = 50; 	//Blanking Period - (Front Porch + Sync Width)
+		display.V_Active = 1280;
 
 		display.H_Polarity = true;
 		display.V_Polarity = true;
