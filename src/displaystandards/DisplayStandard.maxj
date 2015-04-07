@@ -221,6 +221,29 @@ public class DisplayStandard {
 		return display;
 	}
 
+	public static DisplayStandard make_RiftDK2_Half(){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = 98.3076f;
+
+		display.H_Front_Porch = 56; //Horizontal Offset
+		display.H_Sync = 72;
+		display.H_Back_Porch = 128; 	//Blanking Period - (Front Porch + Sync Width)
+		display.H_Active = 720;
+		display.V_Front_Porch = 3; 	//Vertical Offset
+		display.V_Sync = 10;
+		display.V_Back_Porch = 50; 	//Blanking Period - (Front Porch + Sync Width)
+		display.V_Active = 1280;
+
+		display.H_Polarity = true;
+		display.V_Polarity = true;
+
+		display.finalise();
+
+		return display;
+	}
+
 	public static DisplayStandard make_1280x1024x75(){
 
 		DisplayStandard display = new DisplayStandard();
