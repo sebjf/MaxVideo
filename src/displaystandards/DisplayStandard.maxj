@@ -42,11 +42,11 @@ public class DisplayStandard {
 
 	public void InitialiseFromXOrgModeline(String modeline)
 	{
-		String[] modeline_elems = modeline.split(" ");
+		String[] modeline_elems = modeline.split("\\s+");
 
 		int i = 0;
 
-		if(modeline_elems[i] == "Modeline")
+		if(modeline_elems[i].contains("Modeline"))
 		{
 			i = 2;
 		}
@@ -54,14 +54,14 @@ public class DisplayStandard {
 		PixelClock = Float.parseFloat(modeline_elems[i]);
 
 		H_Active = Integer.parseInt(modeline_elems[i + 1]);
-		H_Back_Porch = Integer.parseInt(modeline_elems[i + 2]) - H_Active;
+		H_Front_Porch = Integer.parseInt(modeline_elems[i + 2]) - H_Active;
 		H_Sync = Integer.parseInt(modeline_elems[i + 3]) - Integer.parseInt(modeline_elems[i + 2]);
-		H_Front_Porch = Integer.parseInt(modeline_elems[i + 4]) - Integer.parseInt(modeline_elems[i + 3]);
+		H_Back_Porch = Integer.parseInt(modeline_elems[i + 4]) - Integer.parseInt(modeline_elems[i + 3]);
 
 		V_Active = Integer.parseInt(modeline_elems[i + 5]);
-		V_Back_Porch = Integer.parseInt(modeline_elems[i + 6]) - H_Active;
+		V_Front_Porch = Integer.parseInt(modeline_elems[i + 6]) - V_Active;
 		V_Sync = Integer.parseInt(modeline_elems[i + 7]) - Integer.parseInt(modeline_elems[i + 6]);
-		V_Front_Porch = Integer.parseInt(modeline_elems[i + 8]) - Integer.parseInt(modeline_elems[i + 7]);
+		V_Back_Porch = Integer.parseInt(modeline_elems[i + 8]) - Integer.parseInt(modeline_elems[i + 7]);
 
 		finalise();
 	}
@@ -106,6 +106,15 @@ public class DisplayStandard {
 		H_Blank_Start = H_Active_Start + H_Active;
 		V_Active_Start = V_Sync + V_Back_Porch;
 		V_Blank_Start = V_Active_Start + V_Active;
+
+		System.out.println("H Active:" + H_Active);
+		System.out.println("H Front Porch:" + H_Front_Porch);
+		System.out.println("H Sync Width:" + H_Sync);
+		System.out.println("H Back Porch:" + H_Back_Porch);
+		System.out.println("V Active:" + V_Active);
+		System.out.println("V Front Porch:" + V_Front_Porch);
+		System.out.println("V Sync Width:" + V_Sync);
+		System.out.println("V Back Porch:" + V_Back_Porch);
 	}
 
 	public static DisplayStandard make_debug(int width, int height)
@@ -157,7 +166,7 @@ public class DisplayStandard {
 	public static DisplayStandard make_1280x1024m()
 	{
 		DisplayStandard display = new DisplayStandard();
-		display.InitialiseFromXOrgModeline("Modeline \"1280x1024_75.00\"  138.75  1280 1368 1504 1728  1024 1027 1034 1072 -hsync +vsync");
+		display.InitialiseFromXOrgModeline("Modeline \"1280x1024_60.00\"  109.00  1280 1368 1496 1712  1024 1027 1034 1063 -hsync +vsync");
 		return display;
 	}
 
