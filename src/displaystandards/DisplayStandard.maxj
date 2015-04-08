@@ -40,6 +40,32 @@ public class DisplayStandard {
 	public boolean sanitiseCounters;
 	public boolean enableHalfPatternInput;
 
+	public void InitialiseFromXOrgModeline(String modeline)
+	{
+		String[] modeline_elems = modeline.split(" ");
+
+		int i = 0;
+
+		if(modeline_elems[i] == "Modeline")
+		{
+			i = 2;
+		}
+
+		PixelClock = Float.parseFloat(modeline_elems[i]);
+
+		H_Active = Integer.parseInt(modeline_elems[i + 1]);
+		H_Back_Porch = Integer.parseInt(modeline_elems[i + 2]) - H_Active;
+		H_Sync = Integer.parseInt(modeline_elems[i + 3]) - Integer.parseInt(modeline_elems[i + 2]);
+		H_Front_Porch = Integer.parseInt(modeline_elems[i + 4]) - Integer.parseInt(modeline_elems[i + 3]);
+
+		V_Active = Integer.parseInt(modeline_elems[i + 5]);
+		V_Back_Porch = Integer.parseInt(modeline_elems[i + 6]) - H_Active;
+		V_Sync = Integer.parseInt(modeline_elems[i + 7]) - Integer.parseInt(modeline_elems[i + 6]);
+		V_Front_Porch = Integer.parseInt(modeline_elems[i + 8]) - Integer.parseInt(modeline_elems[i + 7]);
+
+		finalise();
+	}
+
 	public void AddMaxFileConstants(DFEManager manager)
 	{
 		manager.addMaxFileConstant("DisplayTotalWidth", TotalWidth);
@@ -125,6 +151,13 @@ public class DisplayStandard {
 
 		display.finalise();
 
+		return display;
+	}
+
+	public static DisplayStandard make_1280x1024m()
+	{
+		DisplayStandard display = new DisplayStandard();
+		display.InitialiseFromXOrgModeline("Modeline \"1280x1024_75.00\"  138.75  1280 1368 1504 1728  1024 1027 1034 1072 -hsync +vsync");
 		return display;
 	}
 
