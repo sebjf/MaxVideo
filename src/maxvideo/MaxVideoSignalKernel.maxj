@@ -71,6 +71,8 @@ public class MaxVideoSignalKernel extends Kernel {
 		DFEVar h_sync_polarity = io.scalarInput("HSyncPolarity", dfeBool());
 		DFEVar v_sync_polarity = io.scalarInput("VSyncPolarity", dfeBool());
 
+		//We assume we start on sync pulses, like so: http://docs.toradex.com/100270-colibri-display-convention-gn-454x384.gif
+
 		videoWord["HSync"] 	<== (x < displayStandard.H_Sync).ternaryIf(h_sync_polarity, ~h_sync_polarity);
 		videoWord["VSync"] 	<== (y < displayStandard.V_Sync).ternaryIf(v_sync_polarity, ~v_sync_polarity);
 		videoWord["DE"]		<== (x >= displayStandard.H_Active_Start).and(x < displayStandard.H_Blank_Start).and(y >= displayStandard.V_Active_Start).and(y < displayStandard.V_Blank_Start);
