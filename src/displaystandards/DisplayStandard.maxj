@@ -14,9 +14,10 @@ public class DisplayStandard {
 	private DisplayStandard(){
 		sanitiseCounters = true;
 		enableHalfPatternInput = false;
+		forceClock = false;
 	}
 
-	private float PixelClock;
+	public float PixelClock;
 
 	public int H_Front_Porch;
 	public int H_Sync;
@@ -39,6 +40,8 @@ public class DisplayStandard {
 
 	public boolean sanitiseCounters;
 	public boolean enableHalfPatternInput;
+
+	public boolean forceClock;
 
 	public void InitialiseFromXOrgModeline(String modeline)
 	{
@@ -76,6 +79,10 @@ public class DisplayStandard {
 
 	public float getDisplayClock()
 	{
+		if(forceClock)
+		{
+			return PixelClock;
+		}
 		if(isDualLink()){
 			return PixelClock / 2.0f;
 		}
@@ -163,10 +170,42 @@ public class DisplayStandard {
 		return display;
 	}
 
-	public static DisplayStandard make_1280x1024m()
+	public static DisplayStandard make_1024x768(float pixelclock){
+
+		DisplayStandard display = new DisplayStandard();
+
+		display.PixelClock = pixelclock;
+		display.forceClock = true;
+
+		display.H_Front_Porch = 24;
+		display.H_Sync = 136;
+		display.H_Back_Porch = 160;
+		display.H_Active = 1024;
+		display.V_Front_Porch = 3;
+		display.V_Sync = 6;
+		display.V_Back_Porch = 29;
+		display.V_Active = 768;
+
+		display.H_Polarity = false;
+		display.V_Polarity = false;
+
+		display.finalise();
+
+		return display;
+	}
+
+
+	public static DisplayStandard make_1280x1024x60_modeline()
 	{
 		DisplayStandard display = new DisplayStandard();
 		display.InitialiseFromXOrgModeline("Modeline \"1280x1024_60.00\"  109.00  1280 1368 1496 1712  1024 1027 1034 1063 -hsync +vsync");
+		return display;
+	}
+
+	public static DisplayStandard make_1280x1024x60_incorrect()
+	{
+		DisplayStandard display = new DisplayStandard();
+		display.InitialiseFromXOrgModeline("Modeline \"1280x1024_60.00\"  109.00  1250 1368 1496 1712  1024 1027 1034 1063 -hsync +vsync");
 		return display;
 	}
 
@@ -221,19 +260,12 @@ public class DisplayStandard {
 
 		DisplayStandard display = new DisplayStandard();
 
-		display.PixelClock = 164.98f;
+		display.InitialiseFromXOrgModeline("165.0  1080 1113 1123 1138  1920 1921 1927 1933");
 
-		display.H_Front_Porch = 33; //Horizontal Offset
-		display.H_Sync = 10;
-		display.H_Back_Porch = 35; 	//Blanking Period - (Front Porch + Sync Width)
-		display.H_Active = 1080;
-		display.V_Front_Porch = 1; 	//Vertical Offset
-		display.V_Sync = 6;
-		display.V_Back_Porch = 6; 	//Blanking Period - (Front Porch + Sync Width)
-		display.V_Active = 1920;
-
-		display.H_Polarity = true;
-		display.V_Polarity = true;
+		//From xrandr --verbose run on DK2 screen on CentOS
+		// 1080x1920 (0x372)  165.0MHz +HSync -VSync *current +preferred
+	    //   h: width  1080 start 1113 end 1123 total 1138 skew    0 clock  145.0KHz
+	    //   v: height 1920 start 1921 end 1927 total 1933           clock   75.0Hz
 
 		display.finalise();
 
