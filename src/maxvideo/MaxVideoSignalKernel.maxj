@@ -4,8 +4,6 @@ import types.uRGB;
 
 import com.maxeler.maxcompiler.v2.kernelcompiler.Kernel;
 import com.maxeler.maxcompiler.v2.kernelcompiler.KernelParameters;
-import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.Counter;
-import com.maxeler.maxcompiler.v2.kernelcompiler.stdlib.core.Count.WrapMode;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.base.DFEVar;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStruct;
 import com.maxeler.maxcompiler.v2.kernelcompiler.types.composite.DFEStructType;
@@ -51,16 +49,11 @@ public class MaxVideoSignalKernel extends Kernel {
 
 		flush.disabled();
 
-		//DFEVar enable = io.scalarInput("Enable", dfeBool());
-
 		/* Get the display counters */
 
-		DFEVar x = io.input("x", dfeUInt(16));
-		DFEVar y = io.input("y", dfeUInt(16));
-
-		/* Get the colour inputs */
-
-		DFEVar rgb1 = io.input("rgb", dfeUInt(24));
+		VideoCounter counters = new VideoCounter(this, VideoCounter.Scope.Full);
+		DFEVar x = counters.x.cast(dfeInt(32));
+		DFEVar y = counters.y.cast(dfeInt(32));
 
 		/* Create the output struct to map to the transmitter input */
 
@@ -75,10 +68,16 @@ public class MaxVideoSignalKernel extends Kernel {
 
 		videoWord["HSync"] 	<== (x < displayStandard.H_Sync).ternaryIf(h_sync_polarity, ~h_sync_polarity);
 		videoWord["VSync"] 	<== (y < displayStandard.V_Sync).ternaryIf(v_sync_polarity, ~v_sync_polarity);
-		videoWord["DE"]		<== (x >= displayStandard.H_Active_Start).and(x < displayStandard.H_Blank_Start).and(y >= displayStandard.V_Active_Start).and(y < displayStandard.V_Blank_Start);
+
+		DFEVar de			= (x >= displayStandard.H_Active_Start).and(x < displayStandard.H_Blank_Start).and(y >= displayStandard.V_Active_Start).and(y < displayStandard.V_Blank_Start);
+		videoWord["DE"]		<== de;
 
 		videoWord["StartOfFrame"] <== x.eq(0).and(y.eq(0));
 		videoWord["EndOfFrame"]   <== x.eq(displayStandard.TotalWidth - 1).and(y.eq(displayStandard.TotalHeight - 1));
+
+		/* Get the colour inputs */
+
+		DFEVar rgb1 = io.input("rgb", dfeUInt(24), de.cast(dfeBool()));
 
 		/* Extract and format the colour data */
 
@@ -90,10 +89,8 @@ public class MaxVideoSignalKernel extends Kernel {
 
 		/* Generate the phase compensation fifo control signals */
 
-		Counter phaseCompensationFifoCounter = control.count.makeCounter(control.count.makeParams(3).withWrapMode(WrapMode.STOP_AT_MAX));
-
-		videoWord["phaseCompensationFifoWrEn"] <== phaseCompensationFifoCounter.getCount() > 0;
-		videoWord["phaseCompensationFifoRdEn"] <== phaseCompensationFifoCounter.getCount() > 2;
+		videoWord["phaseCompensationFifoWrEn"] <== constant.var(dfeBool(), 0);
+		videoWord["phaseCompensationFifoRdEn"] <== constant.var(dfeBool(), 0);
 
 		/* Debug and test pattern signalling */
 
