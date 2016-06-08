@@ -16,9 +16,9 @@ public class uRGB {
 
 	public uRGB(DFEVar uint24)
 	{
-		m_R = uint24.slice(0, 8);
-		m_G = uint24.slice(8, 8);
-		m_B = uint24.slice(16, 8);
+		m_R = uint24.slice(0, 8).cast(type);
+		m_G = uint24.slice(8, 8).cast(type);
+		m_B = uint24.slice(16, 8).cast(type);
 	}
 
 	public uRGB(int r, int g, int b, Kernel k)
@@ -41,6 +41,11 @@ public class uRGB {
 		m_R = (fColour.m_R * fColour.m_A * 255.0f).cast(type);
 		m_G = (fColour.m_G * fColour.m_A * 255.0f).cast(type);
 		m_B = (fColour.m_B * fColour.m_A * 255.0f).cast(type);
+	}
+
+	public DFEVar get()
+	{
+		return (m_B.cat(m_G.cat(m_R)));
 	}
 
 	private DFEVar getNormalised(DFEVar v)
@@ -90,6 +95,15 @@ public class uRGB {
 	public static uRGB White(Kernel kernel)
 	{
 		return new uRGB(255,255,255,kernel);
+	}
+
+	public uRGB multiply(DFEVar a)
+	{
+		DFEVar R = m_R.cast(Kernel.dfeFloat(8,24)) * a;
+		DFEVar G = m_G.cast(Kernel.dfeFloat(8,24)) * a;
+		DFEVar B = m_B.cast(Kernel.dfeFloat(8,24)) * a;
+
+		return new uRGB(R, G, B);
 	}
 
 	public DFEVar Equals(uRGB a)
